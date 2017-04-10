@@ -1,16 +1,21 @@
 // Sprites
 
 function Hero(game, x, y) {
-    Phaser.Sprite.call(this, game, x, y, 'hero');
+  Phaser.Sprite.call(this, game, x, y, 'hero');
 
-    this.anchor.set(0.5, 0.5);
+  this.anchor.set(0.5, 0.5);
+  this.game.physics.enable(this);
+  this.body.collideWorldBounds = true;
 }
 
 Hero.prototype = Object.create(Phaser.Sprite.prototype);
 Hero.prototype.constructor = Hero;
 
+
+// Use physics to move to allow game performance
 Hero.prototype.move = function (direction) {
-  this.x += direction * 2.5;
+  const SPEED = 200;
+  this.body.velocity.x = direction * SPEED;
 };
 
 // Game State
@@ -46,29 +51,47 @@ PlayState.create = function () {
 // Make hero move left or right
 
 PlayState.update = function() {
+  this._handleCollisions();
   this._handleInput();
+}
+
+PlayState._handleCollisions = function () {
+  this.game.physics.arcade.collide(this.hero, this.platforms);
 }
 
 PlayState._handleInput = function () {
   if(this.keys.left.isDown) {
     this.hero.move(-1);
   }
-  if(this.keys.right.isDown) {
+  else if(this.keys.right.isDown) {
     this.hero.move(1);
+  }
+  else { //stops the hero from moving other character moves indefinetly
+    this.hero.move(0);
   }
 };
 
 // Loads the levels
 
 PlayState._loadLevel = function (data) {
+    // create platform groups
+    this.platforms = this.game.add.group();
     // spawn all platforms
     data.platforms.forEach(this._spawnPlatform, this);
     // spawn hero and enemies
     this._spawnCharacters({hero: data.hero, spiders: data.spiders});
+    // add gravity to game
+    const GRAVITY = 1200;
+    this.game.physics.arcade.gravity.y = GRAVITY;
 };
 
 PlayState._spawnPlatform = function (platform) {
-  this.game.add.sprite(platform.x, platform.y, platform.image);
+  // add platform to the group to enable physics/gravity
+  let sprite = this.platforms.create(platform.x, platform.y, platform.image)
+  this.game.physics.enable(sprite);
+  // disable gravity for the platforms
+  sprite.body.allowGravity = false;
+  sprite.body.immovable = true;
 };
 
 PlayState._spawnCharacters = function (data) {
@@ -85,4 +108,6 @@ window.onload = function () {
     game.state.add('play', PlayState);
     game.state.start('play');
 };
+
+
 
