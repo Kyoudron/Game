@@ -1,3 +1,4 @@
+//===================================
 // Sprites
 
 function Hero(game, x, y) {
@@ -27,6 +28,7 @@ Hero.prototype.jump = function () {
   }
   return canJump;
 }
+//================================
 // Game State
 
 PlayState = {};
@@ -58,15 +60,18 @@ PlayState.preload = function () {
   this.game.load.image('grass:1x1', 'images/grass_1x1.png');
   this.game.load.image('hero', 'images/hero_stopped.png');
 
-  this.game.load.audio('sfx:jump', 'audio/jump.wav')
+  this.game.load.audio('sfx:jump', 'audio/jump.wav');
+  this.game.load.audio('sfx:coin', 'audio/coin.wav');
+
+  this.game.load.spritesheet('coin', 'images/coin_animated.png', 22, 22);
 
 };
 
 PlayState.create = function () {
-
   // sound entities
   this.sfx = {
-    jump: this.game.add.audio('sfx:jump')
+    jump: this.game.add.audio('sfx:jump'),
+    coin: this.game.add.audio('sfx:coin')
   };
 
   this.game.add.image(0, 0, 'background');
@@ -81,7 +86,17 @@ PlayState.update = function() {
 }
 
 PlayState._handleCollisions = function () {
+  // collision detection between the hero and the platforms
   this.game.physics.arcade.collide(this.hero, this.platforms);
+  // collision detection for hero and coins overlapping
+  this.game.physics.arcade.overlap(this.hero, this.coins, this._onHeroVsCoins, null, this) // null, checks all coins 'no filter'
+;}
+
+PlayState._onHeroVsCoins = function (hero, coin) {
+  // plays coin pick up sound when hero touches the coin
+  this.sfx.coin.play();
+  // call back when hero touches the coin, to show "the pick up of the coin"
+  coin.kill();
 }
 
 PlayState._handleInput = function () {
@@ -99,15 +114,20 @@ PlayState._handleInput = function () {
 // Loads the levels
 
 PlayState._loadLevel = function (data) {
-    // create platform groups
-    this.platforms = this.game.add.group();
-    // spawn all platforms
-    data.platforms.forEach(this._spawnPlatform, this);
-    // spawn hero and enemies
-    this._spawnCharacters({hero: data.hero, spiders: data.spiders});
-    // add gravity to game
-    const GRAVITY = 1200;
-    this.game.physics.arcade.gravity.y = GRAVITY;
+  // create platform groups
+  this.platforms = this.game.add.group();
+  // create coin groups
+  this.coins = this.game.add.group();
+  // spawn all platforms
+  data.platforms.forEach(this._spawnPlatform, this);
+  // spawn hero and enemies
+  this._spawnCharacters({hero: data.hero, spiders: data.spiders});
+  // create coins
+  data.coins.forEach(this._spawnCoin, this);
+  // add gravity to game
+  const GRAVITY = 1200;
+  this.game.physics.arcade.gravity.y = GRAVITY;
+
 };
 
 PlayState._spawnPlatform = function (platform) {
@@ -124,6 +144,25 @@ PlayState._spawnCharacters = function (data) {
   this.hero = new Hero(this.game, data.hero.x, data.hero.y);
   this.game.add.existing(this.hero);
 };
+
+PlayState._spawnEnemies = function (data) {
+  //spawn enemies
+  this.enemy = new Enemy(this.game, data.enemy.x, data.enemy.y);
+  this.game.add.existing(this.enemy);
+}
+
+PlayState._spawnCoin = function (coin) {
+  // spawn coins
+  let sprite = this.coins.create(coin.x, coin.y, 'coin');
+  sprite.anchor.set(0.5, 0.5);
+  // animate the coins
+  sprite.animations.add('rotate', [0, 1, 2, 1], 4, true); // 6fps looped
+  sprite.animations.play('rotate');
+  // apply physics to the coins
+  this.game.physics.enable(sprite);
+  sprite.body.allowGravity = false;
+
+}
 
 
 //entry point
