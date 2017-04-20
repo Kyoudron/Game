@@ -79,6 +79,7 @@ PlayState.preload = function () {
   this.game.load.image('grass:2x1', 'images/grass_2x1.png');
   this.game.load.image('grass:1x1', 'images/grass_1x1.png');
   this.game.load.image('hero', 'images/hero_stopped.png');
+  this.game.load.image('invisible-wall', 'images/invisible_wall.png');
 
   this.game.load.audio('sfx:jump', 'audio/jump.wav');
   this.game.load.audio('sfx:coin', 'audio/coin.wav');
@@ -106,6 +107,9 @@ PlayState.update = function() {
 }
 
 PlayState._handleCollisions = function () {
+  // collision detection between spiders and platforms/invisible walls
+  this.game.physics.arcade.collide(this.spiders, this.platforms);
+  this.game.physics.arcade.collide(this.spiders, this.enemyWalls);
   // collision detection between the hero and the platforms
   this.game.physics.arcade.collide(this.hero, this.platforms);
   // collision detection for hero and coins overlapping
@@ -141,6 +145,9 @@ PlayState._loadLevel = function (data) {
   this.coins = this.game.add.group();
   // create spider groups
   this.spiders = this.game.add.group();
+  // create wall groups and hide them from the player
+  this.enemyWalls = this.game.add.group();
+  this.enemyWalls.visible = true;
   // spawn all platforms
   data.platforms.forEach(this._spawnPlatform, this);
   // spawn hero and enemies
@@ -160,7 +167,20 @@ PlayState._spawnPlatform = function (platform) {
   // disable gravity for the platforms
   sprite.body.allowGravity = false;
   sprite.body.immovable = true;
+  // add inivisible walls to the platforms
+  this._spawnEnemyWall(platform.x, platform.y, 'left');
+  this._spawnEnemyWall(platform.x + sprite.width, platform.y, 'right');
 };
+
+PlayState._spawnEnemyWall = function (x, y, side) {
+  // create the invisible walls
+  let sprite = this.enemyWalls.create(x, y, 'invisible-wall');
+  sprite.anchor.set(side === 'left' ? 1 : 0, 1);
+
+  this.game.physics.enable(sprite);
+  sprite.body.immovable = true;
+  sprite.body.allowGravity = false;
+}
 
 PlayState._spawnCharacters = function (data) {
   // spawn the hero
@@ -186,8 +206,6 @@ PlayState._spawnCoin = function (coin) {
   sprite.body.allowGravity = false;
 
 }
-
-
 //entry point
 
 window.onload = function () {
@@ -195,6 +213,4 @@ window.onload = function () {
     game.state.add('play', PlayState);
     game.state.start('play');
 };
-
-
 
