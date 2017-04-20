@@ -1,6 +1,6 @@
-//===================================
 // Sprites
 
+//===================================
 function Hero(game, x, y) {
   Phaser.Sprite.call(this, game, x, y, 'hero');
 
@@ -11,7 +11,6 @@ function Hero(game, x, y) {
 
 Hero.prototype = Object.create(Phaser.Sprite.prototype);
 Hero.prototype.constructor = Hero;
-
 
 // Use physics to move to allow game performance
 Hero.prototype.move = function (direction) {
@@ -28,6 +27,27 @@ Hero.prototype.jump = function () {
   }
   return canJump;
 }
+
+//====================================
+
+function Spider(game, x, y) {
+  Phaser.Sprite.call(this, game, x, y, 'spider');
+
+  this.anchor.set(0.5);
+  this.animations.add('crawl', [0, 1, 2], 8, true);
+  this.animations.add('die', [0, 4, 0, 4, 0, 4, 3, 3, 3, 3, 3, 3], 12);
+  this.animations.play('crawl');
+
+  this.game.physics.enable(this);
+  this.body.collideWorldBounds = true;
+  this.body.velocity.x = Spider.SPEED;
+}
+
+Spider.SPEED = 100;
+
+Spider.prototype = Object.create(Phaser.Sprite.prototype);
+Spider.prototype.constructor = Spider;
+
 //================================
 // Game State
 
@@ -64,6 +84,7 @@ PlayState.preload = function () {
   this.game.load.audio('sfx:coin', 'audio/coin.wav');
 
   this.game.load.spritesheet('coin', 'images/coin_animated.png', 22, 22);
+  this.game.load.spritesheet('spider', 'images/spider.png', 42, 32);
 
 };
 
@@ -78,7 +99,6 @@ PlayState.create = function () {
   this._loadLevel(this.game.cache.getJSON('level:1'));
 };
 
-// Make hero move left or right
 
 PlayState.update = function() {
   this._handleCollisions();
@@ -100,6 +120,7 @@ PlayState._onHeroVsCoins = function (hero, coin) {
 }
 
 PlayState._handleInput = function () {
+// Make hero move left or right
   if(this.keys.left.isDown) {
     this.hero.move(-1);
   }
@@ -118,6 +139,8 @@ PlayState._loadLevel = function (data) {
   this.platforms = this.game.add.group();
   // create coin groups
   this.coins = this.game.add.group();
+  // create spider groups
+  this.spiders = this.game.add.group();
   // spawn all platforms
   data.platforms.forEach(this._spawnPlatform, this);
   // spawn hero and enemies
@@ -143,13 +166,13 @@ PlayState._spawnCharacters = function (data) {
   // spawn the hero
   this.hero = new Hero(this.game, data.hero.x, data.hero.y);
   this.game.add.existing(this.hero);
-};
 
-PlayState._spawnEnemies = function (data) {
-  //spawn enemies
-  this.enemy = new Enemy(this.game, data.enemy.x, data.enemy.y);
-  this.game.add.existing(this.enemy);
-}
+  // spawn spiders
+  data.spiders.forEach(function (spider) {
+    let sprite = new Spider(this.game, spider.x, spider.y);
+    this.spiders.add(sprite);
+  }, this);
+};
 
 PlayState._spawnCoin = function (coin) {
   // spawn coins
