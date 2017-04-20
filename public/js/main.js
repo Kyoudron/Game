@@ -18,6 +18,12 @@ Hero.prototype.move = function (direction) {
   this.body.velocity.x = direction * SPEED;
 };
 
+Hero.prototype.bounce = function () {
+  // little bounce after hero lands on an enemy
+  const BOUNCE_SPEED = 200;
+  this.body.velocity.y = -BOUNCE_SPEED;
+};
+
 // Allow the hero to jump
 Hero.prototype.jump = function () {
   const JUMP_SPEED = 600;
@@ -35,7 +41,7 @@ function Spider(game, x, y) {
 
   this.anchor.set(0.5);
   this.animations.add('crawl', [0, 1, 2], 8, true);
-  this.animations.add('die', [0, 4, 0, 4, 0, 4, 3, 3, 3, 3, 3, 3], 12);
+  this.animations.add('die', [0, 4, 0, 4, 0, 4, 3, 3, 3, 3, 3, 3], 12); // last two frames are for spider death animation
   this.animations.play('crawl');
 
   this.game.physics.enable(this);
@@ -56,6 +62,15 @@ Spider.prototype.update = function () {
   else if (this.body.touching.left || this.body.blocked.left) {
       this.body.velocity.x = Spider.SPEED; // turn right
   }
+};
+
+Spider.prototype.die = function () {
+  // after death, the animation is no longer considered part of collisions
+  this.body.enable = false;
+
+  this.animations.play('die').onComplete.addOnce(function () {
+    this.kill();
+  }, this);
 };
 
 //================================
@@ -131,11 +146,18 @@ PlayState._handleCollisions = function () {
 ;}
 
 PlayState._onHeroVsEnemy = function (hero, enemy) {
-  // plays the stomp when hero lands on a spider
-  this.sfx.stomp.play();
+  // kills enemy if hero lands on it
+  if (hero.body.velocity.y > 0) {
+    enemy.die();
+    // hero bounces
+    hero.bounce();
+    // plays the stomp when hero lands on a spider
+    this.sfx.stomp.play();
+  } else {
   // restart game if spider kills hero
   this.game.state.restart();
-}
+  }
+};
 
 PlayState._onHeroVsCoins = function (hero, coin) {
   // plays coin pick up sound when hero touches the coin
