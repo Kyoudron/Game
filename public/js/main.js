@@ -48,6 +48,16 @@ Spider.SPEED = 100;
 Spider.prototype = Object.create(Phaser.Sprite.prototype);
 Spider.prototype.constructor = Spider;
 
+Spider.prototype.update = function () {
+  // check against walls and reverse direction if necessary
+  if (this.body.touching.right || this.body.blocked.right) {
+      this.body.velocity.x = -Spider.SPEED; // turn left
+  }
+  else if (this.body.touching.left || this.body.blocked.left) {
+      this.body.velocity.x = Spider.SPEED; // turn right
+  }
+};
+
 //================================
 // Game State
 
@@ -83,6 +93,7 @@ PlayState.preload = function () {
 
   this.game.load.audio('sfx:jump', 'audio/jump.wav');
   this.game.load.audio('sfx:coin', 'audio/coin.wav');
+  this.game.load.audio('sfx:stomp', 'audio/stomp.wav');
 
   this.game.load.spritesheet('coin', 'images/coin_animated.png', 22, 22);
   this.game.load.spritesheet('spider', 'images/spider.png', 42, 32);
@@ -93,7 +104,8 @@ PlayState.create = function () {
   // sound entities
   this.sfx = {
     jump: this.game.add.audio('sfx:jump'),
-    coin: this.game.add.audio('sfx:coin')
+    coin: this.game.add.audio('sfx:coin'),
+    stomp: this.game.add.audio('sfx:stomp')
   };
 
   this.game.add.image(0, 0, 'background');
@@ -113,8 +125,17 @@ PlayState._handleCollisions = function () {
   // collision detection between the hero and the platforms
   this.game.physics.arcade.collide(this.hero, this.platforms);
   // collision detection for hero and coins overlapping
-  this.game.physics.arcade.overlap(this.hero, this.coins, this._onHeroVsCoins, null, this) // null, checks all coins 'no filter'
+  this.game.physics.arcade.overlap(this.hero, this.coins, this._onHeroVsCoins, null, this); // null, checks all coins 'no filter'
+  // when spider touches hero something should get hurt
+  this.game.physics.arcade.overlap(this.hero, this.spiders, this._onHeroVsEnemy, null, this);
 ;}
+
+PlayState._onHeroVsEnemy = function (hero, enemy) {
+  // plays the stomp when hero lands on a spider
+  this.sfx.stomp.play();
+  // restart game if spider kills hero
+  this.game.state.restart();
+}
 
 PlayState._onHeroVsCoins = function (hero, coin) {
   // plays coin pick up sound when hero touches the coin
