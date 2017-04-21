@@ -37,6 +37,12 @@ Hero.prototype._getAnimationName = function () {
 Hero.prototype.move = function (direction) {
   const SPEED = 200;
   this.body.velocity.x = direction * SPEED;
+
+  if (this.body.velocity.x < 0) {
+    this.scale.x = -1;
+  } else if (this.body.velocity.x > 0) {
+    this.scale.x = 1;
+  }
 };
 
 Hero.prototype.bounce = function () {
