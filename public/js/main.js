@@ -92,8 +92,10 @@ PlayState.init = function () {
     }
   }, this)
   // scoreboard counter
-  this.coinPickCount = 0;
+  this.coinPickupCount = 0;
 };
+
+
 
 PlayState.preload = function () {
   this.game.load.json('level:1', 'data/level01.json');
@@ -108,6 +110,7 @@ PlayState.preload = function () {
   this.game.load.image('hero', 'images/hero_stopped.png');
   this.game.load.image('invisible-wall', 'images/invisible_wall.png');
   this.game.load.image('icon:coin', 'images/coin_icon.png'); // coin icon in corner
+  this.game.load.image('font:numbers', 'images/numbers.png');
 
   this.game.load.audio('sfx:jump', 'audio/jump.wav');
   this.game.load.audio('sfx:coin', 'audio/coin.wav');
@@ -136,6 +139,7 @@ PlayState.create = function () {
 PlayState.update = function() {
   this._handleCollisions();
   this._handleInput();
+  this.coinFont.text = `x${this.coinPickupCount}`;
 }
 
 PlayState._handleCollisions = function () {
@@ -171,7 +175,7 @@ PlayState._onHeroVsCoins = function (hero, coin) {
   // call back when hero touches the coin, to show "the pick up of the coin"
   coin.kill();
   // increment counter for coins picked up
-  this.coinPickCount++;
+  this.coinPickupCount++;
 }
 
 PlayState._handleInput = function () {
@@ -258,11 +262,17 @@ PlayState._spawnCoin = function (coin) {
 }
 
 PlayState._createHud = function () {
+  const NUMBERS_STR = '0123456789X';
+  this.coinFont = this.game.add.retroFont('font:numbers', 20, 26, NUMBERS_STR, 6);
+
   let coinIcon = this.game.make.image(0, 0, 'icon:coin');
+  let coinScoreImg = this.game.make.image(coinIcon.x + coinIcon.width, coinIcon.height / 2, this.coinFont);
+  coinScoreImg.anchor.set(0, 0.5);
 
   this.hud = this.game.add.group();
   this.hud.add(coinIcon);
-  this.hud.position.set(5, 5);
+  this.hud.add(coinScoreImg);
+  this.hud.position.set(10, 10);
 }
 
 //entry point
