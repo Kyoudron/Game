@@ -91,6 +91,8 @@ PlayState.init = function () {
       this.sfx.jump.play();
     }
   }, this)
+  // scoreboard counter
+  this.coinPickCount = 0;
 };
 
 PlayState.preload = function () {
@@ -105,6 +107,7 @@ PlayState.preload = function () {
   this.game.load.image('grass:1x1', 'images/grass_1x1.png');
   this.game.load.image('hero', 'images/hero_stopped.png');
   this.game.load.image('invisible-wall', 'images/invisible_wall.png');
+  this.game.load.image('icon:coin', 'images/coin_icon.png'); // coin icon in corner
 
   this.game.load.audio('sfx:jump', 'audio/jump.wav');
   this.game.load.audio('sfx:coin', 'audio/coin.wav');
@@ -125,6 +128,8 @@ PlayState.create = function () {
 
   this.game.add.image(0, 0, 'background');
   this._loadLevel(this.game.cache.getJSON('level:1'));
+
+  this._createHud();
 };
 
 
@@ -145,6 +150,7 @@ PlayState._handleCollisions = function () {
   this.game.physics.arcade.overlap(this.hero, this.spiders, this._onHeroVsEnemy, null, this);
 ;}
 
+
 PlayState._onHeroVsEnemy = function (hero, enemy) {
   // kills enemy if hero lands on it
   if (hero.body.velocity.y > 0) {
@@ -164,6 +170,8 @@ PlayState._onHeroVsCoins = function (hero, coin) {
   this.sfx.coin.play();
   // call back when hero touches the coin, to show "the pick up of the coin"
   coin.kill();
+  // increment counter for coins picked up
+  this.coinPickCount++;
 }
 
 PlayState._handleInput = function () {
@@ -247,8 +255,16 @@ PlayState._spawnCoin = function (coin) {
   // apply physics to the coins
   this.game.physics.enable(sprite);
   sprite.body.allowGravity = false;
-
 }
+
+PlayState._createHud = function () {
+  let coinIcon = this.game.make.image(0, 0, 'icon:coin');
+
+  this.hud = this.game.add.group();
+  this.hud.add(coinIcon);
+  this.hud.position.set(5, 5);
+}
+
 //entry point
 
 window.onload = function () {
