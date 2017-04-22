@@ -156,7 +156,7 @@ PlayState.preload = function () {
   this.game.load.spritesheet('coin', 'images/coin_animated.png', 22, 22);
   this.game.load.spritesheet('spider', 'images/spider.png', 42, 32);
   this.game.load.spritesheet('door', 'images/door.png', 42, 66);
-
+  this.game.load.spritesheet('icon:key', 'images/key_icon.png', 34, 30);
 };
 
 PlayState.create = function () {
@@ -180,6 +180,7 @@ PlayState.update = function() {
   this._handleCollisions();
   this._handleInput();
   this.coinFont.text = `x${this.coinPickupCount}`;
+  this.keyIcon.frame = this.hasKey ? 1 : 0;
 }
 
 PlayState._handleCollisions = function () {
@@ -291,6 +292,13 @@ PlayState._spawnKey = function (x, y) {
   this.key.anchor.setTo(0.5, 0.5);
   this.game.physics.enable(this.key);
   this.key.body.allowGravity = false;
+  // adding an 'up & down' movement to the key
+  this.key.y -= 3;
+  this.game.add.tween(this.key)
+    .to({y: this.key.y + 6}, 800, Phaser.Easing.Sinusoidal.InOut)
+    .yoyo(true)
+    .loop()
+    .start();
 }
 
 PlayState._spawnPlatform = function (platform) {
@@ -340,18 +348,24 @@ PlayState._spawnCoin = function (coin) {
 }
 
 PlayState._createHud = function () {
-  const NUMBERS_STR = '0123456789X';
-  this.coinFont = this.game.add.retroFont('font:numbers', 20, 26, NUMBERS_STR, 6);
+  const NUMBERS_STR = '0123456789X ';
+  this.coinFont = this.game.add.retroFont('font:numbers', 20, 26,
+      NUMBERS_STR);
 
-  let coinIcon = this.game.make.image(0, 0, 'icon:coin');
-  let coinScoreImg = this.game.make.image(coinIcon.x + coinIcon.width, coinIcon.height / 2, this.coinFont);
+  this.keyIcon = this.game.make.image(0, 19, 'icon:key');
+  this.keyIcon.anchor.set(0, 0.5);
+
+  let coinIcon = this.game.make.image(this.keyIcon.width + 7, 0, 'icon:coin');
+  let coinScoreImg = this.game.make.image(coinIcon.x + coinIcon.width,
+      coinIcon.height / 2, this.coinFont);
   coinScoreImg.anchor.set(0, 0.5);
 
   this.hud = this.game.add.group();
   this.hud.add(coinIcon);
   this.hud.add(coinScoreImg);
+  this.hud.add(this.keyIcon);
   this.hud.position.set(10, 10);
-}
+};
 
 //entry point
 
