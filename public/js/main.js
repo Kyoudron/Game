@@ -152,6 +152,7 @@ PlayState.preload = function () {
   this.game.load.spritesheet('hero', 'images/hero.png', 36, 42);
   this.game.load.spritesheet('coin', 'images/coin_animated.png', 22, 22);
   this.game.load.spritesheet('spider', 'images/spider.png', 42, 32);
+  this.game.load.spritesheet('door', 'images/door.png', 42, 66);
 
 };
 
@@ -228,6 +229,8 @@ PlayState._handleInput = function () {
 // Loads the levels
 
 PlayState._loadLevel = function (data) {
+  // create background images group
+  this.bgDecoration = this.game.add.group();
   // create platform groups
   this.platforms = this.game.add.group();
   // create coin groups
@@ -243,11 +246,19 @@ PlayState._loadLevel = function (data) {
   this._spawnCharacters({hero: data.hero, spiders: data.spiders});
   // create coins
   data.coins.forEach(this._spawnCoin, this);
+  // spawn door
+  this._spawnDoor(data.door.x, data.door.y);
   // add gravity to game
   const GRAVITY = 1200;
   this.game.physics.arcade.gravity.y = GRAVITY;
-
 };
+
+PlayState._spawnDoor = function (x, y) {
+  this.door = this.bgDecoration.create(x, y, 'door');
+  this.door.anchor.setTo(0.5, 1);
+  this.game.physics.enable(this.door); // physics enabled to have hero and door interactions
+  this.door.body.allowGravity = false;
+}
 
 PlayState._spawnPlatform = function (platform) {
   // add platform to the group to enable physics/gravity
