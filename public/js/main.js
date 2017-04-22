@@ -194,7 +194,19 @@ PlayState._handleCollisions = function () {
   this.game.physics.arcade.overlap(this.hero, this.spiders, this._onHeroVsEnemy, null, this);
   // collision detection when hero picks up the key
   this.game.physics.arcade.overlap(this.hero, this.key, this._onHeroVsKey, null, this);
+  // collision detection with hero and door. Ignore detection if hero doesn't have the key
+  this.game.physics.arcade.overlap(this.hero, this.door, this._onHeroVsDoor,
+    // ignore if hero doesn't have key
+    function (hero, door) {
+      return this.hasKey && hero.body.touching.down;
+    }, this);
 };
+
+PlayState._onHeroVsDoor = function (hero, door) {
+  this.sfx.door.play();
+  this.game.state.restart();
+  //
+}
 
 PlayState._onHeroVsKey = function (hero, key) {
   this.sfx.key.play();
