@@ -127,9 +127,9 @@ PlayState.init = function () {
   }, this)
   // scoreboard counter
   this.coinPickupCount = 0;
+  // default hero/key position
+  this.hasKey = false;
 };
-
-
 
 PlayState.preload = function () {
   this.game.load.json('level:1', 'data/level01.json');
@@ -149,6 +149,8 @@ PlayState.preload = function () {
   this.game.load.audio('sfx:jump', 'audio/jump.wav');
   this.game.load.audio('sfx:coin', 'audio/coin.wav');
   this.game.load.audio('sfx:stomp', 'audio/stomp.wav');
+  this.game.load.audio('sfx:key', 'audio/key.wav');
+  this.game.load.audio('sfx:door', 'audio/door.wav');
 
   this.game.load.spritesheet('hero', 'images/hero.png', 36, 42);
   this.game.load.spritesheet('coin', 'images/coin_animated.png', 22, 22);
@@ -162,7 +164,9 @@ PlayState.create = function () {
   this.sfx = {
     jump: this.game.add.audio('sfx:jump'),
     coin: this.game.add.audio('sfx:coin'),
-    stomp: this.game.add.audio('sfx:stomp')
+    stomp: this.game.add.audio('sfx:stomp'),
+    key: this.game.add.audio('sfx:key'),
+    door: this.game.add.audio('sfx:door')
   };
 
   this.game.add.image(0, 0, 'background');
@@ -188,8 +192,15 @@ PlayState._handleCollisions = function () {
   this.game.physics.arcade.overlap(this.hero, this.coins, this._onHeroVsCoins, null, this); // null, checks all coins 'no filter'
   // when spider touches hero something should get hurt
   this.game.physics.arcade.overlap(this.hero, this.spiders, this._onHeroVsEnemy, null, this);
-;}
+  // collision detection when hero picks up the key
+  this.game.physics.arcade.overlap(this.hero, this.key, this._onHeroVsKey, null, this);
+};
 
+PlayState._onHeroVsKey = function (hero, key) {
+  this.sfx.key.play();
+  key.kill();
+  this.hasKey = true;
+};
 
 PlayState._onHeroVsEnemy = function (hero, enemy) {
   // kills enemy if hero lands on it
