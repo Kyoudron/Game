@@ -144,6 +144,7 @@ PlayState.preload = function () {
   this.game.load.image('invisible-wall', 'images/invisible_wall.png');
   this.game.load.image('icon:coin', 'images/coin_icon.png'); // coin icon in corner
   this.game.load.image('font:numbers', 'images/numbers.png');
+  this.game.load.image('key', 'images/key.png');
 
   this.game.load.audio('sfx:jump', 'audio/jump.wav');
   this.game.load.audio('sfx:coin', 'audio/coin.wav');
@@ -248,6 +249,8 @@ PlayState._loadLevel = function (data) {
   data.coins.forEach(this._spawnCoin, this);
   // spawn door
   this._spawnDoor(data.door.x, data.door.y);
+  // spawn key
+  this._spawnKey(data.key.x, data.key.y);
   // add gravity to game
   const GRAVITY = 1200;
   this.game.physics.arcade.gravity.y = GRAVITY;
@@ -258,6 +261,13 @@ PlayState._spawnDoor = function (x, y) {
   this.door.anchor.setTo(0.5, 1);
   this.game.physics.enable(this.door); // physics enabled to have hero and door interactions
   this.door.body.allowGravity = false;
+}
+
+PlayState._spawnKey = function (x, y) {
+  this.key = this.bgDecoration.create(x, y, 'key');
+  this.key.anchor.setTo(0.5, 0.5);
+  this.game.physics.enable(this.key);
+  this.key.body.allowGravity = false;
 }
 
 PlayState._spawnPlatform = function (platform) {
