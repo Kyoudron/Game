@@ -112,7 +112,10 @@ Spider.prototype.die = function () {
 
 PlayState = {};
 
-PlayState.init = function () {
+// How many levels
+const LEVEL_COUNT = 2;
+
+PlayState.init = function (data) {
   this.game.renderer.renderSession.roundPixels = true;
   this.keys = this.game.input.keyboard.addKeys({
     left: Phaser.KeyCode.LEFT,
@@ -129,9 +132,12 @@ PlayState.init = function () {
   this.coinPickupCount = 0;
   // default hero/key position
   this.hasKey = false;
+  this.level = (data.level || 0) % LEVEL_COUNT;
 };
 
 PlayState.preload = function () {
+  this.game.load.json('level:0', 'data/level00.json');
+
   this.game.load.json('level:1', 'data/level01.json');
 
   this.game.load.image('background', 'images/background.png');
@@ -171,6 +177,8 @@ PlayState.create = function () {
 
   this.game.add.image(0, 0, 'background');
   this._loadLevel(this.game.cache.getJSON('level:1'));
+  // building a key to determine what the current level is
+  this._loadLevel(this.game.cache.getJSON(`level:${this.level}`));
 
   this._createHud();
 };
@@ -370,8 +378,9 @@ PlayState._createHud = function () {
 //entry point
 
 window.onload = function () {
-    let game = new Phaser.Game(960, 600, Phaser.AUTO, 'game');
-    game.state.add('play', PlayState);
-    game.state.start('play');
+  let game = new Phaser.Game(960, 600, Phaser.AUTO, 'game');
+  game.state.add('play', PlayState);
+  game.state.start('play');
+  game.state.start('play', true, false, {level: 0});
 };
 
