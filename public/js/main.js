@@ -212,7 +212,7 @@ PlayState._handleCollisions = function () {
 
 PlayState._onHeroVsDoor = function (hero, door) {
   this.sfx.door.play();
-  this.game.state.restart();
+  this.game.state.restart(true, false, {level: this.level + 1});
   //
 }
 
@@ -232,7 +232,7 @@ PlayState._onHeroVsEnemy = function (hero, enemy) {
     this.sfx.stomp.play();
   } else {
   // restart game if spider kills hero
-  this.game.state.restart();
+  this.game.state.restart(true, false, {level: this.level});
   }
 };
 
