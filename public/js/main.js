@@ -176,9 +176,8 @@ PlayState.create = function () {
   };
 
   this.game.add.image(0, 0, 'background');
-  this._loadLevel(this.game.cache.getJSON('level:1'));
   // building a key to determine what the current level is
-  this._loadLevel(this.game.cache.getJSON(`level:${this.level}`));
+  this._loadLevel(this.game.cache.getJSON(`level:${this.level}`))
 
   this._createHud();
 };
